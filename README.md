@@ -41,3 +41,5 @@ Choose a weight unit and click Weight
 Click Intelligence - Friendly to compare
 
 Click the average buttons to see intelligence stats
+
+I have used "Stackoverflow" for the fetch function, filter function and a little hint for average function. 
