@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Cat Info App</title>
+    <style>
+        body {
+            font-family: Arial;
+            padding: 20px;
+        }
+
+        input,
+        button,
+        select {
+            margin: 5px 0;
+            padding: 6px;
+        }
+
+        #output {
+            white-space: pre-line;
+            border: 1px solid #ccc;
+            padding: 10px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <h3>Cat Info App</h3>
+
+    <button onclick="showAllNames()">All Names</button><br>
+
+    <input type="number" id="healthIssueInput" placeholder="Health Issues">
+    <button onclick="filterByHealthIssue()">Filter</button><br>
+
+    <label>
+        <input type="radio" name="unit" value="imperial" checked> Imperial
+    </label>
+    <label>
+        <input type="radio" name="unit" value="metric"> Metric
+    </label>
+    <button onclick="showWeights()">Weight</button><br>
+
+    <button onclick="showIntelligenceFriendly()">Intelligence - Friendly</button><br>
+    <button onclick="showAverageIntelligence()">Average Intelligence</button><br>
+    <button onclick="showAvgIntelligenceForChildFriendly()">Average Intelligence for Child Friendly = 4</button><br>
+
+    <div id="output">-- All Results should be displayed here --</div>
+
+ <script>
+    let cats = [];
+
+    // Fetch data from The Cat API
+    fetch('https://api.thecatapi.com/v1/breeds')
+        .then(response => response.json())
+        .then(data => {
+            cats = data.map(cat => ({
+                name: cat.name,
+                weight_imperial: cat.weight?.imperial || "N/A",
+                weight_metric: cat.weight?.metric || "N/A",
+                intelligence: cat.intelligence ?? 0,
+                child_friendly: cat.child_friendly ?? 0,
+                health_issues: cat.health_issues ?? 0
+            }));
+            document.getElementById("output").innerText = "Cat data loaded. Ready to use!";
+        })
+        .catch(error => {
+            document.getElementById("output").innerText = "Failed to fetch cat data.";
+            console.error(error);
+        });
+
+    function showAllNames() {
+        const names = cats.map(cat => cat.name).join("\n");
+        document.getElementById("output").innerText = `All names (total = ${cats.length}):\n${names}`;
+    }
+
+    function filterByHealthIssue() {
+        const issueNum = parseInt(document.getElementById("healthIssueInput").value);
+        const filtered = cats.filter(cat => cat.health_issues === issueNum);
+        const result = filtered.map(cat => cat.name).join("\n");
+        document.getElementById("output").innerText = `Cats with health issue #${issueNum} (total = ${filtered.length}):\n${result}`;
+    }
+
+    function showWeights() {
+        const unit = document.querySelector('input[name="unit"]:checked').value;
+        const label = unit === "imperial" ? "Weight in Imperial:" : "Weight in Metric:";
+        const list = cats.map(cat =>
+            `${cat.name}: ${unit === "imperial" ? cat.weight_imperial : cat.weight_metric}`
+        ).join("\n");
+        document.getElementById("output").innerText = `${label}\n${list}`;
+    }
+
+    function showIntelligenceFriendly() {
+        const result = cats.map(cat =>
+            `${cat.name} - I: ${cat.intelligence} - F: ${cat.child_friendly}`
+        ).join("\n");
+        document.getElementById("output").innerText = result;
+    }
+
+    function showAverageIntelligence() {
+        if (cats.length === 0) return;
+        const avg = cats.reduce((sum, cat) => sum + cat.intelligence, 0) / cats.length;
+        document.getElementById("output").innerText = `Average Intelligence: ${avg.toFixed(2)}`;
+    }
+
+    function showAvgIntelligenceForChildFriendly() {
+        const filtered = cats.filter(cat => cat.child_friendly === 4);
+        if (filtered.length === 0) {
+            document.getElementById("output").innerText = "No cats with child friendly = 4.";
+            return;
+        }
+        const avg = filtered.reduce((sum, cat) => sum + cat.intelligence, 0) / filtered.length;
+        document.getElementById("output").innerText =
+            `Average Intelligence for Child Friendly = 4:\n${avg.toFixed(2)}`;
+    }
+</script>
+
+</body>
+
+</html>
